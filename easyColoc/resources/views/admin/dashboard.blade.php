@@ -598,7 +598,33 @@
         }
 
         .btn-see-all:hover { color: var(--accent); }
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 16px;
+        }
 
+        .nav-menu-item {
+            font-family: 'Syne', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.15s;
+        }
+
+        .nav-menu-item:hover {
+            color: var(--accent);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .nav-menu-item.active {
+            color: var(--accent);
+            background: rgba(110,231,183,0.1);
+        }
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(16px); }
             to { opacity: 1; transform: translateY(0); }
@@ -610,18 +636,27 @@
 <body>
     <!-- Navigation -->
     <nav>
-        <a href="{{ route('dashboard') }}" class="nav-logo">
-            <div class="nav-logo-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-                    <polyline points="9 22 9 12 15 12 15 22"/>
-                </svg>
+        <div style="display: flex; align-items: center; gap: 32px;">
+            <a href="{{ route('admin.dashboard') }}" class="nav-logo">
+                <div class="nav-logo-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                </div>
+                Dashboard
+            </a>
+
+            <!-- Colocation Menu -->
+            <div class="nav-menu">
+                <a href="{{ route('admin.dashboard') }}" class="nav-menu-item {{ request()->routeIs('colocations.*') ? 'active' : '' }}">
+                    Colocation
+                </a>
             </div>
-            Dashboard
-        </a>
+        </div>
         
         <div class="nav-right">
-            <!-- User Dropdown -->
+            <!-- User Dropdown (keep existing) -->
             <div class="relative" x-data="{ open: false }">
                 <button @click="open = !open" class="nav-user">
                     {{ auth()->user()->name }}
@@ -658,11 +693,9 @@
             </div>
         </div>
     </nav>
-
     <main>
         <div class="page-header">
-            <div class="page-label">Admin / Supervision</div>
-            <h1 class="page-title">SUPERVISION<br>GLOBALE</h1>
+            <h1 class="page-title">EasyCloc</h1>
             <p class="page-sub">Vue d'ensemble de la plateforme</p>
         </div>
 
@@ -741,7 +774,7 @@
                         <th>Utilisateur</th>
                         <th>Email</th>
                         <th>Réputation</th>
-                        <th>Statut</th>
+                        <!-- <th>Statut</th> -->
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -766,20 +799,29 @@
                                 </div>
                             </div>
                         </td>
-                        <td>
+                        <!-- <td>
                             <span class="status-badge active">
                                 <span class="dot"></span>
                                 Actif
                             </span>
-                        </td>
+                        </td> -->
                         <td>
                             @if(auth()->user()->id === $user->id)
                                 <span class="action-protected">Protégé</span>
                             @else
-                                <div class="action-btns">
-                                    <button class="btn-edit">Éditer</button>
-                                    <button class="btn-ban">Bannir</button>
-                                </div>
+                                @if($user->is_banned)
+                                    <form method="POST" action="{{ route('admin.users.unban', $user) }}" class="inline">
+                                        @csrf
+                                        <button type="submit" class="btn-edit" style="background: rgba(110,231,183,0.1); border-color: rgba(110,231,183,0.2); color: var(--accent);">
+                                            Réactiver
+                                        </button>
+                                    </form>
+                                @else
+                                    <form method="POST" action="{{ route('admin.users.ban', $user) }}" class="inline" >
+                                        @csrf
+                                        <button type="submit" class="btn-ban">Bannir</button>
+                                    </form>
+                                @endif
                             @endif
                         </td>
                     </tr>
@@ -793,10 +835,6 @@
                 </tbody>
             </table>
 
-            <div class="table-footer">
-                <p class="footer-count">Affichage de <span>{{ $users->total() }}</span> utilisateurs</p>
-                <a href="{{ route('admin.users.index') }}" class="btn-see-all">Voir tous les utilisateurs →</a>
-            </div>
         </div>
     </main>
 
