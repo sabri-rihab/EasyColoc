@@ -18,6 +18,57 @@
                 </div>
             </div>
 
+            <!-- Notifications/Invitations Dropdown -->
+            <div class="hidden sm:flex sm:items-center sm:ms-6">
+                @php
+                    $pendingInvitations = Auth::user()->pendingInvitations();
+                @endphp
+                
+                <x-dropdown align="right" width="64">
+                    <x-slot name="trigger">
+                        <button class="relative inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                            <div>Invitations</div>
+                            @if($pendingInvitations->count() > 0)
+                                <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">{{ $pendingInvitations->count() }}</span>
+                            @endif
+                            <div class="ms-1">
+                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </button>
+                    </x-slot>
+
+                    <x-slot name="content">
+                        <div class="block px-4 py-2 text-xs text-gray-400">
+                            {{ __('Invitations en attente') }}
+                        </div>
+
+                        @forelse($pendingInvitations as $invitation)
+                            <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <p class="text-sm text-gray-800 dark:text-gray-200">
+                                    Invitation à rejoindre <strong>{{ $invitation->colocation->name }}</strong>
+                                </p>
+                                <div class="mt-2 flex space-x-2">
+                                    <form method="POST" action="{{ route('invitations.accept', $invitation) }}">
+                                        @csrf
+                                        <button type="submit" class="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded">Accepter</button>
+                                    </form>
+                                    <form method="POST" action="{{ route('invitations.reject', $invitation) }}">
+                                        @csrf
+                                        <button type="submit" class="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded">Refuser</button>
+                                    </form>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                                {{ __('Aucune invitation en attente') }}
+                            </div>
+                        @endforelse
+                    </x-slot>
+                </x-dropdown>
+            </div>
+
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
@@ -70,6 +121,33 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+        </div>
+
+        <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
+            <div class="px-4 py-2 text-xs text-gray-400">
+                {{ __('Invitations') }}
+            </div>
+            @forelse(Auth::user()->pendingInvitations() as $invitation)
+                <div class="px-4 py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
+                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                        {{ $invitation->colocation->name }}
+                    </p>
+                    <div class="mt-2 flex space-x-2">
+                        <form method="POST" action="{{ route('invitations.accept', $invitation) }}">
+                            @csrf
+                            <button type="submit" class="text-green-600 font-bold text-xs uppercase">Accepter</button>
+                        </form>
+                        <form method="POST" action="{{ route('invitations.reject', $invitation) }}">
+                            @csrf
+                            <button type="submit" class="text-red-600 font-bold text-xs uppercase">Refuser</button>
+                        </form>
+                    </div>
+                </div>
+            @empty
+                <div class="px-4 py-2 text-sm text-gray-500">
+                    {{ __('Aucune invitation') }}
+                </div>
+            @endforelse
         </div>
 
         <!-- Responsive Settings Options -->
