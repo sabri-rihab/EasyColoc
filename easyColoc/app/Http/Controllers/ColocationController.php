@@ -159,9 +159,12 @@ class ColocationController extends Controller
             abort(403);
         }
 
-        $colocation->update(['is_active' => false]);
+        // Check if there are other members
+        if ($colocation->members()->count() > 1) {
+            return back()->with('error', 'Vous ne pouvez pas annuler la colocation tant qu\'elle contient encore d\'autres membres. Retirez-les d\'abord.');
+        }
 
-        // Reputation logic will be handled later as per requirements
+        $colocation->update(['is_active' => false]);
 
         return redirect()->route('dashboard')->with('success', 'La colocation a été annulée.');
     }
