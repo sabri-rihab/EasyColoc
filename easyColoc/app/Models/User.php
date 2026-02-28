@@ -98,11 +98,10 @@ class User extends Authenticatable
         return $this->hasMany(Expense::class, 'payer_id');
     }
 
-    // Get pending invitations for this user.
     public function pendingInvitations()
     {
         return $this->hasMany(Invitation::class, 'email', 'email')
-                    ->whereNull('accepted_at')
+                    ->where('status', 'pending')
                     ->where('expires_at', '>', now());
     }
 

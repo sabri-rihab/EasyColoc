@@ -68,12 +68,19 @@ class InvitationController extends Controller
             return redirect()->route('dashboard')->with('error', 'Cette invitation a déjà été acceptée.');
         }
 
+        if ($invitation->isRefused()) {
+            return redirect()->route('dashboard')->with('error', 'Cette invitation a été refusée.');
+        }
+
         if ($user->hasActiveColocation()) {
             return redirect()->route('dashboard')->with('error', 'Vous avez déjà une colocation active.');
         }
 
         // Mark as accepted
-        $invitation->update(['accepted_at' => now()]);
+        $invitation->update([
+            'accepted_at' => now(),
+            'status' => 'accepted'
+        ]);
 
         // Add user to colocation
         $invitation->colocation->members()->attach($user->id, [
@@ -95,7 +102,11 @@ class InvitationController extends Controller
             abort(403);
         }
 
-        $invitation->delete();
+        if ($invitation->isAccepted()) {
+            return redirect()->route('dashboard')->with('error', 'Impossible de refuser une invitation déjà acceptée.');
+        }
+
+        $invitation->update(['status' => 'refused']);
 
         return redirect()->route('dashboard')->with('success', 'Invitation refusée.');
     }

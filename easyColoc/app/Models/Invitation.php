@@ -14,6 +14,7 @@ class Invitation extends Model
         'colocation_id',
         'inviter_id',
         'email',
+        'status',
         'token',
         'accepted_at',
         'expires_at'
@@ -55,6 +56,12 @@ class Invitation extends Model
     //Check if invitation is accepted.
     public function isAccepted()
     {
-        return $this->accepted_at !== null;
+        return $this->status === 'accepted';
+    }
+
+    //Check if invitation is refused.
+    public function isRefused()
+    {
+        return $this->status === 'refused';
     }
 }

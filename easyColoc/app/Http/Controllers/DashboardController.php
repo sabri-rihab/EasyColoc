@@ -79,7 +79,10 @@ class DashboardController extends Controller
                 'selectedMonth'
             ));
         } else {
-            $invitations = $user->pendingInvitations()->with('colocation', 'inviter')->get();
+            $invitations = $user->pendingInvitations()
+                ->where('status', 'pending')
+                ->with('colocation', 'inviter')
+                ->get();
             return view('dashboard.no-colocation', compact('invitations'));
         }
     }
