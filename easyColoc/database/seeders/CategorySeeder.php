@@ -13,17 +13,17 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            ['name' => 'Alimentation', 'slug' => 'alimentation', 'icon' => '🛒'],
-            ['name' => 'Loyer / Charges', 'slug' => 'loyer', 'icon' => '🏠'],
-            ['name' => 'Électricité', 'slug' => 'electricite', 'icon' => '⚡'],
-            ['name' => 'Eau', 'slug' => 'eau', 'icon' => '💧'],
-            ['name' => 'Internet', 'slug' => 'internet', 'icon' => '📡'],
-            ['name' => 'Transport', 'slug' => 'transport', 'icon' => '🚗'],
-            ['name' => 'Autre', 'slug' => 'autre', 'icon' => '💰'],
+            ['name' => 'Alimentation', 'icon' => '🛒'],
+            ['name' => 'Loyer / Charges', 'icon' => '🏠'],
+            ['name' => 'Électricité', 'icon' => '⚡'],
+            ['name' => 'Eau', 'icon' => '💧'],
+            ['name' => 'Internet', 'icon' => '📡'],
+            ['name' => 'Transport', 'icon' => '🚗'],
+            ['name' => 'Autre', 'icon' => '💰'],
         ];
 
         foreach ($categories as $cat) {
-            \App\Models\Category::updateOrCreate(['slug' => $cat['slug']], $cat);
+            \App\Models\Category::updateOrCreate(['name' => $cat['name']], $cat);
         }
     }
 }

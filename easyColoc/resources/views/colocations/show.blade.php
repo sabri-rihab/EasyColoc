@@ -384,7 +384,7 @@
                                                 </span>
                                             @endif
                                             @if($expense->category_rel)
-                                                <span class="cat-badge cat-{{ $expense->category_rel->slug }}">{{ $expense->category_rel->name }}</span>
+                                                <span class="cat-badge">{{ $expense->category_rel->name }}</span>
                                             @endif
                                             <span>Payé par <strong style="color:var(--text-dim)">{{ $expense->payer->name ?? '?' }}</strong></span>
                                         </div>
