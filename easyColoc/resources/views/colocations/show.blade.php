@@ -724,7 +724,53 @@
         {{-- ============ TAB: SETTINGS (owner only) ============ --}}
         @if($colocation->owner_id === Auth::id())
         <div id="tab-settings" class="tab-panel">
-            <div style="max-width:640px;">
+            <div style="max-width:640px; display:flex; flex-direction:column; gap:24px;">
+                
+                {{-- Custom Categories Section --}}
+                <div class="card" style="animation: fadeUp 0.5s ease both;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon purple">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                            </div>
+                            Catégories Personnalisées
+                        </div>
+                    </div>
+                    <div style="padding: 24px;">
+                        <p style="font-size:11px; color:var(--text-muted); margin-bottom:16px;">
+                            Créez des catégories spécifiques à votre colocation. Elles ne seront visibles que par vous et vos colocataires.
+                        </p>
+                        
+                        <form method="POST" action="{{ route('categories.store', $colocation) }}" style="display:grid; grid-template-columns: 1fr 100px auto; gap:12px; align-items:flex-end;">
+                            @csrf
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label" style="font-size:10px;">Nom de la catégorie</label>
+                                <input type="text" name="name" class="form-input" placeholder="Ex: Ménage, Jardin..." required>
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label" style="font-size:10px;">Icône (Emoji)</label>
+                                <input type="text" name="icon" class="form-input" placeholder="✨" max="5">
+                            </div>
+                            <button type="submit" class="btn-primary" style="padding:10px 16px;">Ajouter</button>
+                        </form>
+
+                        @php $customCats = $categories->whereNotNull('colocation_id'); @endphp
+                        @if($customCats->isNotEmpty())
+                            <div style="margin-top:24px;">
+                                <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:12px;">Vos catégories :</div>
+                                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                                    @foreach($customCats as $cc)
+                                        <div style="padding:6px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; font-size:12px; display:flex; align-items:center; gap:8px;">
+                                            <span>{{ $cc->icon }}</span>
+                                            <span style="font-weight:600; color:var(--text);">{{ $cc->name }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
                 <div class="danger-zone" style="margin-top:8px;">
                     <div class="danger-zone-title">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
