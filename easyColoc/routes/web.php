@@ -27,6 +27,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('colocations', \App\Http\Controllers\ColocationController::class);
     Route::post('colocations/{colocation}/leave', [\App\Http\Controllers\ColocationController::class, 'leave'])->name('colocations.leave');
     Route::delete('colocations/{colocation}/members/{member}', [\App\Http\Controllers\ColocationController::class, 'removeMember'])->name('colocations.members.remove');
+    Route::post('colocations/{colocation}/categories', [\App\Http\Controllers\CategoryController::class, 'store'])->name('categories.store');
 
     // Invitations
     Route::post('colocations/{colocation}/invitations', [\App\Http\Controllers\InvitationController::class, 'store'])->name('invitations.store');

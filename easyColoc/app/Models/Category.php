@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    protected $fillable = ['name', 'icon'];
+    protected $fillable = ['colocation_id', 'name', 'icon'];
+
+    public function colocation()
+    {
+        return $this->belongsTo(Colocation::class);
+    }
 
     public function expenses()
     {
