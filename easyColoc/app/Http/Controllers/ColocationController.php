@@ -182,18 +182,24 @@ class ColocationController extends Controller
         }
 
         DB::transaction(function() use ($colocation, $user) {
-            // Calculate balance before leaving
-            $balance = $user->getColocationBalance($colocation);
+            // Calculate total debt only (ignore credits/money owed to the user)
+            $totalDebt = DB::table('expense_user')
+                ->join('expenses', 'expense_user.expense_id', '=', 'expenses.id')
+                ->where('expenses.colocation_id', $colocation->id)
+                ->where('expense_user.user_id', $user->id)
+                ->where('expenses.payer_id', '!=', $user->id) // I am debtor
+                ->where('expense_user.is_paid', false)
+                ->sum('amount_owed');
 
-            // Update reputation
-            if ($balance < 0) {
-                $user->decrement('reputation'); // Owes money: -1
+            // Update reputation based on debt
+            if ($totalDebt > 0) {
+                $user->decrement('reputation'); // Has debt: -1
             } else {
-                $user->increment('reputation'); // Owed or zero: +1
+                $user->increment('reputation'); // No debt: +1
             }
 
             // If they have debt, it's transferred to owner
-            if ($balance < 0) {
+            if ($totalDebt > 0) {
                 $this->transferDebtToOwner($colocation, $user);
             }
 
@@ -221,18 +227,24 @@ class ColocationController extends Controller
         }
 
         DB::transaction(function() use ($colocation, $member) {
-            // Calculate balance
-            $balance = $member->getColocationBalance($colocation);
+            // Calculate total debt only
+            $totalDebt = DB::table('expense_user')
+                ->join('expenses', 'expense_user.expense_id', '=', 'expenses.id')
+                ->where('expenses.colocation_id', $colocation->id)
+                ->where('expense_user.user_id', $member->id)
+                ->where('expenses.payer_id', '!=', $member->id) // Member is debtor
+                ->where('expense_user.is_paid', false)
+                ->sum('amount_owed');
 
             // Update reputation
-            if ($balance < 0) {
+            if ($totalDebt > 0) {
                 $member->decrement('reputation');
             } else {
                 $member->increment('reputation');
             }
 
-            // Transfer debt if negative
-            if ($balance < 0) {
+            // Transfer debt if positive
+            if ($totalDebt > 0) {
                 $this->transferDebtToOwner($colocation, $member);
             }
 
