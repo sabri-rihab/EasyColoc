@@ -540,22 +540,45 @@
                 <h2 class="page-title" style="font-size: 28px; margin-bottom: 24px;">Soldes de la colocation</h2>
 
                 <div class="balance-card">
-                    @foreach($userBalances as $id => $data)
-                        <div class="balance-row">
-                            <div class="balance-user-info">
-                                <div class="avatar" style="background: linear-gradient(135deg, {{ ['#818cf8,#6ee7b7','#f472b6,#fb923c','#6ee7b7,#818cf8','#fb923c,#f472b6'][$data['user']->id % 4] }})">
-                                    {{ strtoupper(substr($data['user']->name, 0, 2)) }}
-                                </div>
-                                <div>
-                                    <div style="font-size: 14px; font-weight: 600; color: var(--text);">{{ $data['user']->name }}</div>
-                                    <div style="font-size: 10px; color: var(--text-muted);">{{ $id === Auth::id() ? 'Votre solde actuel' : 'Solde du membre' }}</div>
-                                </div>
-                            </div>
-                            <div class="balance-amount {{ $data['balance'] >= 0 ? 'balance-pos' : 'balance-neg' }}">
-                                {{ $data['balance'] >= 0 ? '+' : '' }}{{ number_format($data['balance'], 2) }} MAD
+                    {{-- Monthly Contribution Overview --}}
+                    @if($selectedMonth)
+                        @php
+                            $parts = explode('-', $selectedMonth);
+                            $frMonths = ['01'=>'Janvier','02'=>'Février','03'=>'Mars','04'=>'Avril','05'=>'Mai','06'=>'Juin','07'=>'Juillet','08'=>'Août','09'=>'Septembre','10'=>'Octobre','11'=>'Novembre','12'=>'Décembre'];
+                            $monthLabel = ($frMonths[$parts[1]] ?? $parts[1]) . ' ' . $parts[0];
+                        @endphp
+                        <div style="padding: 20px 24px; border-bottom: 2px solid var(--border); background: var(--surface2);">
+                            <div style="font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-muted); margin-bottom:12px;">Dépenses effectuées en {{ $monthLabel }}</div>
+                            <div style="display:flex; flex-direction:column; gap:10px;">
+                                @foreach($members as $m)
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <div style="font-size:12px; font-weight:500; color:var(--text);">{{ $m->name }}</div>
+                                        <div style="font-size:13px; font-weight:700; color:var(--accent2);">{{ number_format($monthlySpending[$m->id] ?? 0, 2) }} MAD</div>
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
-                    @endforeach
+                    @endif
+
+                    <div style="padding: 24px;">
+                        <div style="font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-muted); margin-bottom:16px;">Soldes Actuels (Globaux)</div>
+                        @foreach($userBalances as $id => $data)
+                            <div class="balance-row">
+                                <div class="balance-user-info">
+                                    <div class="avatar" style="background: linear-gradient(135deg, {{ ['#818cf8,#6ee7b7','#f472b6,#fb923c','#6ee7b7,#818cf8','#fb923c,#f472b6'][$data['user']->id % 4] }})">
+                                        {{ strtoupper(substr($data['user']->name, 0, 2)) }}
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 14px; font-weight: 600; color: var(--text);">{{ $data['user']->name }}</div>
+                                        <div style="font-size: 10px; color: var(--text-muted);">{{ $id === Auth::id() ? 'Votre solde net' : 'Solde net du membre' }}</div>
+                                    </div>
+                                </div>
+                                <div class="balance-amount {{ $data['balance'] >= 0 ? 'balance-pos' : 'balance-neg' }}">
+                                    {{ $data['balance'] >= 0 ? '+' : '' }}{{ number_format($data['balance'], 2) }} MAD
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
 
                     @php
                         // Simple settlement logic: find who owes who

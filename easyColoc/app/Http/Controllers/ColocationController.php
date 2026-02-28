@@ -101,11 +101,19 @@ class ColocationController extends Controller
 
         // Balances calculation for the "Soldes" tab
         $userBalances = [];
+        $monthlySpending = [];
         foreach ($members as $m) {
             $userBalances[$m->id] = [
                 'user' => $m,
                 'balance' => $m->getColocationBalance($colocation)
             ];
+
+            if ($selectedMonth) {
+                $monthlySpending[$m->id] = $colocation->expenses()
+                    ->where('payer_id', $m->id)
+                    ->whereRaw("DATE_FORMAT(expense_date, '%Y-%m') = ?", [$selectedMonth])
+                    ->sum('amount');
+            }
         }
 
         return view('colocations.show', compact(
@@ -115,7 +123,8 @@ class ColocationController extends Controller
             'availableMonths',
             'selectedMonth',
             'filteredTotal',
-            'userBalances'
+            'userBalances',
+            'monthlySpending'
         ));
     }
 

@@ -8,9 +8,10 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
+        $selectedMonth = $request->query('month');
 
         if ($user->hasActiveColocation()) {
             $colocation = $user->currentColocation();
@@ -45,13 +46,24 @@ class DashboardController extends Controller
                 ->select('users.name as user_name', 'expense_user.amount_owed', 'expenses.title as expense_title')
                 ->get();
 
-            $globalExpenses = $colocation->expenses()->sum('amount');
-            $recentExpenses = $colocation->expenses()
-                ->with('payer')
-                ->latest('expense_date')
-                ->take(5)
-                ->get();
+            $globalExpensesQuery = $colocation->expenses();
+            $recentExpensesQuery = $colocation->expenses()->with('payer');
+
+            if ($selectedMonth) {
+                $globalExpensesQuery->whereRaw("DATE_FORMAT(expense_date, '%Y-%m') = ?", [$selectedMonth]);
+                $recentExpensesQuery->whereRaw("DATE_FORMAT(expense_date, '%Y-%m') = ?", [$selectedMonth]);
+            }
+
+            $globalExpenses = $globalExpensesQuery->sum('amount');
+            $recentExpenses = $recentExpensesQuery->latest('expense_date')->take(10)->get();
             $members = $colocation->members()->get();
+
+            // Available months for filter
+            $availableMonths = $colocation->expenses()
+                ->selectRaw("DATE_FORMAT(expense_date, '%Y-%m') as month")
+                ->groupByRaw("DATE_FORMAT(expense_date, '%Y-%m')")
+                ->orderByRaw("DATE_FORMAT(expense_date, '%Y-%m') desc")
+                ->pluck('month');
 
             return view('dashboard.colocation', compact(
                 'colocation',
@@ -62,7 +74,9 @@ class DashboardController extends Controller
                 'recentExpenses',
                 'members',
                 'whoOwesMe',
-                'whomIOwe'
+                'whomIOwe',
+                'availableMonths',
+                'selectedMonth'
             ));
         } else {
             $invitations = $user->pendingInvitations()->with('colocation', 'inviter')->get();

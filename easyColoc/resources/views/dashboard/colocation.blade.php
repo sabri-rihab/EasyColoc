@@ -447,18 +447,44 @@
                             <div class="card-icon purple">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                             </div>
-                            Dépenses Récentes
+                            Dépenses {{ $selectedMonth ? 'filtrées' : 'récentes' }}
                         </div>
                         <a href="{{ route('colocations.show', $colocation) }}" style="font-size:11px; color:var(--accent2); text-decoration:none; transition:color 0.15s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--accent2)'">
-                            Voir tout →
+                            Détails →
                         </a>
+                    </div>
+
+                    {{-- Month Filter --}}
+                    <div style="padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--surface2); display: flex; align-items: center; gap: 10px;">
+                        <form method="GET" action="{{ route('dashboard') }}" style="display:flex;align-items:center;gap:10px;flex:1;">
+                            <span style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Filtrer :</span>
+                            <select name="month" class="form-input" style="padding: 6px 12px; font-size: 11px; width: auto;" onchange="this.form.submit()">
+                                <option value="">Tous les mois</option>
+                                @foreach($availableMonths as $month)
+                                    @php
+                                        $parts = explode('-', $month);
+                                        $frMonths = ['01'=>'Janvier','02'=>'Février','03'=>'Mars','04'=>'Avril','05'=>'Mai','06'=>'Juin','07'=>'Juillet','08'=>'Août','09'=>'Septembre','10'=>'Octobre','11'=>'Novembre','12'=>'Décembre'];
+                                        $label = ($frMonths[$parts[1]] ?? $parts[1]) . ' ' . $parts[0];
+                                    @endphp
+                                    <option value="{{ $month }}" {{ $selectedMonth === $month ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            @if($selectedMonth)
+                                <a href="{{ route('dashboard') }}" style="font-size:11px; color:var(--danger); text-decoration:none;">✕ Effacer</a>
+                            @endif
+                        </form>
+                        <div style="font-size: 11px; color: var(--text-muted);">
+                             Total : <strong style="color:var(--accent3);">{{ number_format($globalExpenses, 2) }} MAD</strong>
+                        </div>
                     </div>
 
                     @if($recentExpenses->isEmpty())
                         <div class="empty-state">
                             <div class="empty-state-icon">💸</div>
                             <div class="empty-state-title">Aucune dépense</div>
-                            <div class="empty-state-text">Aucune dépense enregistrée pour le moment.<br>Commencez par en ajouter une depuis la page colocation.</div>
+                            <div class="empty-state-text">
+                                {{ $selectedMonth ? 'Aucune dépense trouvée pour ce mois.' : 'Aucune dépense enregistrée pour le moment.' }}
+                            </div>
                         </div>
                     @else
                         @foreach($recentExpenses as $expense)
