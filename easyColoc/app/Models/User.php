@@ -56,7 +56,7 @@ class User extends Authenticatable
 
     public function colocations()
     {
-        return $this->belongsToMany(Colocation::class)
+        return $this->belongsToMany(Colocation::class, 'colocations_user')
                     ->withPivot('is_owner', 'joined_at')
                     ->withTimestamps();
     }
@@ -98,4 +98,40 @@ class User extends Authenticatable
         return $this->hasMany(Expense::class, 'payer_id');
     }
 
+    // Get pending invitations for this user.
+    public function pendingInvitations()
+    {
+        return $this->hasMany(Invitation::class, 'email', 'email')
+                    ->whereNull('accepted_at')
+                    ->where('expires_at', '>', now());
+    }
+
+    /**
+     * Calculate net balance in a specific colocation (Credits - Debts).
+     * Normal is 0. Positive means people owe you. Negative means you owe.
+     */
+    public function getColocationBalance($colocation)
+    {
+        if (!$colocation) return 0;
+
+        // Money others owe me (I am payer, they are debtors, not paid)
+        $credits = \Illuminate\Support\Facades\DB::table('expense_user')
+            ->join('expenses', 'expense_user.expense_id', '=', 'expenses.id')
+            ->where('expenses.colocation_id', $colocation->id)
+            ->where('expenses.payer_id', $this->id)
+            ->where('expense_user.user_id', '!=', $this->id)
+            ->where('expense_user.is_paid', false)
+            ->sum('amount_owed');
+
+        // Money I owe others (Someone else is payer, I am debtor, not paid)
+        $debts = \Illuminate\Support\Facades\DB::table('expense_user')
+            ->join('expenses', 'expense_user.expense_id', '=', 'expenses.id')
+            ->where('expenses.colocation_id', $colocation->id)
+            ->where('expenses.payer_id', '!=', $this->id)
+            ->where('expense_user.user_id', $this->id)
+            ->where('expense_user.is_paid', false)
+            ->sum('amount_owed');
+
+        return round($credits - $debts, 2);
+    }
 }

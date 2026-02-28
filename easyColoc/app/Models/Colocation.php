@@ -12,7 +12,7 @@ class Colocation extends Model
 
     protected $fillable = [
         'name',
-        'description',
+        'adresse',
         'owner_id',
         'invitation_code',
         'is_active'
@@ -36,7 +36,7 @@ class Colocation extends Model
     //Get all members of the colocation.
     public function members()
     {
-        return $this->belongsToMany(User::class)
+        return $this->belongsToMany(User::class, 'colocations_user')
                     ->withPivot('is_owner', 'joined_at')
                     ->withTimestamps();
     }
