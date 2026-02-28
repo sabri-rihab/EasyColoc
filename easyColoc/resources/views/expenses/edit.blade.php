@@ -81,18 +81,16 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="category">Catégorie</label>
-                            <select id="category" name="category" class="form-input">
-                                <option value="">— Aucune catégorie —</option>
-                                <option value="alimentation" {{ old('category', $expense->category) === 'alimentation' ? 'selected' : '' }}>🛒 Alimentation</option>
-                                <option value="loyer"        {{ old('category', $expense->category) === 'loyer'        ? 'selected' : '' }}>🏠 Loyer / Charges</option>
-                                <option value="electricite"  {{ old('category', $expense->category) === 'electricite'  ? 'selected' : '' }}>⚡ Électricité</option>
-                                <option value="eau"          {{ old('category', $expense->category) === 'eau'          ? 'selected' : '' }}>💧 Eau</option>
-                                <option value="internet"     {{ old('category', $expense->category) === 'internet'     ? 'selected' : '' }}>📡 Internet</option>
-                                <option value="transport"    {{ old('category', $expense->category) === 'transport'    ? 'selected' : '' }}>🚗 Transport</option>
-                                <option value="autre"        {{ old('category', $expense->category) === 'autre'        ? 'selected' : '' }}>💰 Autre</option>
+                            <label class="form-label" for="category_id">Catégorie</label>
+                            <select id="category_id" name="category_id" class="form-input">
+                                <option value="">— Sélectionner une catégorie —</option>
+                                @foreach($categories as $cat)
+                                    <option value="{{ $cat->id }}" {{ old('category_id', $expense->category_id) == $cat->id ? 'selected' : '' }}>
+                                        {{ $cat->icon }} {{ $cat->name }}
+                                    </option>
+                                @endforeach
                             </select>
-                            @error('category') <div class="form-error">{{ $message }}</div> @enderror
+                            @error('category_id') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
 
                         <div class="form-group">

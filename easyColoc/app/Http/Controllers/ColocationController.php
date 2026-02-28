@@ -81,7 +81,7 @@ class ColocationController extends Controller
         // Monthly filter
         $selectedMonth = $request->query('month'); // e.g. "2026-02"
 
-        $expenseQuery = $colocation->expenses()->with('payer', 'debtors');
+        $expenseQuery = $colocation->expenses()->with('payer', 'debtors', 'category_rel');
 
         if ($selectedMonth) {
             $expenseQuery->whereRaw("DATE_FORMAT(expense_date, '%Y-%m') = ?", [$selectedMonth]);
@@ -116,6 +116,8 @@ class ColocationController extends Controller
             }
         }
 
+        $categories = \App\Models\Category::all();
+
         return view('colocations.show', compact(
             'colocation',
             'members',
@@ -124,7 +126,8 @@ class ColocationController extends Controller
             'selectedMonth',
             'filteredTotal',
             'userBalances',
-            'monthlySpending'
+            'monthlySpending',
+            'categories'
         ));
     }
 

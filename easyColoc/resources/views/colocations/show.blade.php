@@ -371,15 +371,7 @@
                             <div class="expense-item">
                                 <div class="expense-main">
                                     <div class="expense-cat">
-                                        @switch($expense->category)
-                                            @case('alimentation') 🛒 @break
-                                            @case('loyer')        🏠 @break
-                                            @case('electricite')  ⚡ @break
-                                            @case('eau')          💧 @break
-                                            @case('internet')     📡 @break
-                                            @case('transport')    🚗 @break
-                                            @default              💰
-                                        @endswitch
+                                        {{ $expense->category_rel->icon ?? '💰' }}
                                     </div>
 
                                     <div class="expense-body">
@@ -391,8 +383,8 @@
                                                     <span class="dot"></span> Terminée
                                                 </span>
                                             @endif
-                                            @if($expense->category)
-                                                <span class="cat-badge cat-{{ $expense->category }}">{{ ucfirst($expense->category) }}</span>
+                                            @if($expense->category_rel)
+                                                <span class="cat-badge cat-{{ $expense->category_rel->slug }}">{{ $expense->category_rel->name }}</span>
                                             @endif
                                             <span>Payé par <strong style="color:var(--text-dim)">{{ $expense->payer->name ?? '?' }}</strong></span>
                                         </div>
@@ -510,15 +502,13 @@
 
                             <div class="form-group">
                                 <label class="form-label" for="category">Catégorie</label>
-                                <select id="category" name="category" class="form-input">
+                                <select id="category_id" name="category_id" class="form-input">
                                     <option value="">— Aucune catégorie —</option>
-                                    <option value="alimentation" {{ old('category') === 'alimentation' ? 'selected' : '' }}>🛒 Alimentation</option>
-                                    <option value="loyer"        {{ old('category') === 'loyer' ? 'selected' : '' }}>🏠 Loyer / Charges</option>
-                                    <option value="electricite"  {{ old('category') === 'electricite' ? 'selected' : '' }}>⚡ Électricité</option>
-                                    <option value="eau"          {{ old('category') === 'eau' ? 'selected' : '' }}>💧 Eau</option>
-                                    <option value="internet"     {{ old('category') === 'internet' ? 'selected' : '' }}>📡 Internet</option>
-                                    <option value="transport"    {{ old('category') === 'transport' ? 'selected' : '' }}>🚗 Transport</option>
-                                    <option value="autre"        {{ old('category') === 'autre' ? 'selected' : '' }}>💰 Autre</option>
+                                    @foreach($categories as $cat)
+                                        <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>
+                                            {{ $cat->icon }} {{ $cat->name }}
+                                        </option>
+                                    @endforeach
                                 </select>
                                 @error('category') <div class="form-error">{{ $message }}</div> @enderror
                             </div>

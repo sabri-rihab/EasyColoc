@@ -490,15 +490,7 @@
                         @foreach($recentExpenses as $expense)
                         <div class="expense-row">
                             <div class="expense-cat-icon">
-                                @switch($expense->category)
-                                    @case('alimentation') 🛒 @break
-                                    @case('loyer') 🏠 @break
-                                    @case('electricite') ⚡ @break
-                                    @case('eau') 💧 @break
-                                    @case('internet') 📡 @break
-                                    @case('transport') 🚗 @break
-                                    @default 💰
-                                @endswitch
+                                {{ $expense->category_rel->icon ?? '💰' }}
                             </div>
                             <div class="expense-info">
                                 <div class="expense-title">{{ $expense->title }}</div>

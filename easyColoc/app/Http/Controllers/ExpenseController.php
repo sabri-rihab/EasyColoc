@@ -21,8 +21,9 @@ class ExpenseController extends Controller
         }
 
         $members = $colocation->members()->get();
+        $categories = \App\Models\Category::all();
 
-        return view('expenses.create', compact('colocation', 'members'));
+        return view('expenses.create', compact('colocation', 'members', 'categories'));
     }
 
     /**
@@ -39,7 +40,7 @@ class ExpenseController extends Controller
             'title'        => 'required|string|max:255',
             'description'  => 'nullable|string|max:1000',
             'amount'       => 'required|numeric|min:0.01|max:999999.99',
-            'category'     => 'nullable|string|max:100',
+            'category_id'  => 'nullable|exists:categories,id',
             'expense_date' => 'required|date',
             'payer_id'     => 'required|exists:users,id',
         ]);
@@ -59,7 +60,7 @@ class ExpenseController extends Controller
                 'title'         => $validated['title'],
                 'description'   => $validated['description'] ?? null,
                 'amount'        => $validated['amount'],
-                'category'      => $validated['category'] ?? null,
+                'category_id'   => $validated['category_id'] ?? null,
                 'expense_date'  => $validated['expense_date'],
                 'is_settled'    => false,
             ]);
@@ -96,8 +97,9 @@ class ExpenseController extends Controller
         $this->authorizeEditDelete($colocation, $expense);
 
         $members = $colocation->members()->get();
+        $categories = \App\Models\Category::all();
 
-        return view('expenses.edit', compact('colocation', 'expense', 'members'));
+        return view('expenses.edit', compact('colocation', 'expense', 'members', 'categories'));
     }
 
     /**
@@ -111,7 +113,7 @@ class ExpenseController extends Controller
             'title'        => 'required|string|max:255',
             'description'  => 'nullable|string|max:1000',
             'amount'       => 'required|numeric|min:0.01|max:999999.99',
-            'category'     => 'nullable|string|max:100',
+            'category_id'  => 'nullable|exists:categories,id',
             'expense_date' => 'required|date',
             'payer_id'     => 'required|exists:users,id',
         ]);
@@ -128,7 +130,7 @@ class ExpenseController extends Controller
             'title'        => $validated['title'],
             'description'  => $validated['description'] ?? null,
             'amount'       => $validated['amount'],
-            'category'     => $validated['category'] ?? null,
+            'category_id'  => $validated['category_id'] ?? null,
             'expense_date' => $validated['expense_date'],
         ]);
 

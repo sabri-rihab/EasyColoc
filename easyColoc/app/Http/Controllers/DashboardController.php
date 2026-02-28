@@ -47,7 +47,7 @@ class DashboardController extends Controller
                 ->get();
 
             $globalExpensesQuery = $colocation->expenses();
-            $recentExpensesQuery = $colocation->expenses()->with('payer');
+            $recentExpensesQuery = $colocation->expenses()->with('payer', 'category_rel');
 
             if ($selectedMonth) {
                 $globalExpensesQuery->whereRaw("DATE_FORMAT(expense_date, '%Y-%m') = ?", [$selectedMonth]);
@@ -57,6 +57,7 @@ class DashboardController extends Controller
             $globalExpenses = $globalExpensesQuery->sum('amount');
             $recentExpenses = $recentExpensesQuery->latest('expense_date')->take(10)->get();
             $members = $colocation->members()->get();
+            $categories = \App\Models\Category::all();
 
             // Available months for filter
             $availableMonths = $colocation->expenses()
@@ -76,7 +77,8 @@ class DashboardController extends Controller
                 'whoOwesMe',
                 'whomIOwe',
                 'availableMonths',
-                'selectedMonth'
+                'selectedMonth',
+                'categories'
             ));
         } else {
             $invitations = $user->pendingInvitations()

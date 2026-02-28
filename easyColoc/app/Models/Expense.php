@@ -12,6 +12,7 @@ class Expense extends Model
     protected $fillable = [
         'colocation_id',
         'payer_id',
+        'category_id',
         'title',
         'description',
         'amount',
@@ -19,6 +20,11 @@ class Expense extends Model
         'expense_date',
         'is_settled'
     ];
+
+    public function category_rel()
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
 
     protected $casts = [
         'expense_date' => 'date',
