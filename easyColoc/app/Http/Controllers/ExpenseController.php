@@ -21,7 +21,11 @@ class ExpenseController extends Controller
         }
 
         $members = $colocation->members()->get();
-        $categories = \App\Models\Category::all();
+        $categories = \App\Models\Category::whereNull('colocation_id')
+            ->orWhere('colocation_id', $colocation->id)
+            ->orderByRaw('colocation_id IS NULL ASC')
+            ->orderBy('name')
+            ->get();
 
         return view('expenses.create', compact('colocation', 'members', 'categories'));
     }
@@ -97,7 +101,11 @@ class ExpenseController extends Controller
         $this->authorizeEditDelete($colocation, $expense);
 
         $members = $colocation->members()->get();
-        $categories = \App\Models\Category::all();
+        $categories = \App\Models\Category::whereNull('colocation_id')
+            ->orWhere('colocation_id', $colocation->id)
+            ->orderByRaw('colocation_id IS NULL ASC')
+            ->orderBy('name')
+            ->get();
 
         return view('expenses.edit', compact('colocation', 'expense', 'members', 'categories'));
     }

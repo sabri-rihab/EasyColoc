@@ -116,7 +116,11 @@ class ColocationController extends Controller
             }
         }
 
-        $categories = \App\Models\Category::all();
+        $categories = \App\Models\Category::whereNull('colocation_id')
+            ->orWhere('colocation_id', $colocation->id)
+            ->orderByRaw('colocation_id IS NULL ASC') // Custom categories first
+            ->orderBy('name')
+            ->get();
 
         return view('colocations.show', compact(
             'colocation',
