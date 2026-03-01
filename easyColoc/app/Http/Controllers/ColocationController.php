@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class ColocationController extends Controller
 {
+    use \App\Traits\DebtTransferable;
     /**
      * Display a listing of the resource.
      */
@@ -202,13 +203,7 @@ class ColocationController extends Controller
 
         DB::transaction(function() use ($colocation, $user) {
             // Calculate total debt only (ignore credits/money owed to the user)
-            $totalDebt = DB::table('expense_user')
-                ->join('expenses', 'expense_user.expense_id', '=', 'expenses.id')
-                ->where('expenses.colocation_id', $colocation->id)
-                ->where('expense_user.user_id', $user->id)
-                ->where('expenses.payer_id', '!=', $user->id) // I am debtor
-                ->where('expense_user.is_paid', false)
-                ->sum('amount_owed');
+            $totalDebt = $this->calculateDebt($colocation, $user);
 
             // Update reputation based on debt
             if ($totalDebt > 0) {
@@ -219,7 +214,7 @@ class ColocationController extends Controller
 
             // If they have debt, it's transferred to owner
             if ($totalDebt > 0) {
-                $this->transferDebtToOwner($colocation, $user);
+                $this->transferDebt($colocation, $user, $colocation->owner_id);
             }
 
             $colocation->members()->detach($user->id);
@@ -247,13 +242,7 @@ class ColocationController extends Controller
 
         DB::transaction(function() use ($colocation, $member) {
             // Calculate total debt only
-            $totalDebt = DB::table('expense_user')
-                ->join('expenses', 'expense_user.expense_id', '=', 'expenses.id')
-                ->where('expenses.colocation_id', $colocation->id)
-                ->where('expense_user.user_id', $member->id)
-                ->where('expenses.payer_id', '!=', $member->id) // Member is debtor
-                ->where('expense_user.is_paid', false)
-                ->sum('amount_owed');
+            $totalDebt = $this->calculateDebt($colocation, $member);
 
             // Update reputation
             if ($totalDebt > 0) {
@@ -264,7 +253,7 @@ class ColocationController extends Controller
 
             // Transfer debt if positive
             if ($totalDebt > 0) {
-                $this->transferDebtToOwner($colocation, $member);
+                $this->transferDebt($colocation, $member, $colocation->owner_id);
             }
 
             $colocation->members()->detach($member->id);
@@ -274,35 +263,10 @@ class ColocationController extends Controller
     }
 
     /**
-     * Helper to transfer a member's unpaid debts to the owner.
+     * @deprecated Use transferDebt from trait
      */
     protected function transferDebtToOwner(Colocation $colocation, User $member)
     {
-        $unpaidDebts = DB::table('expense_user')
-            ->join('expenses', 'expense_user.expense_id', '=', 'expenses.id')
-            ->where('expenses.colocation_id', $colocation->id)
-            ->where('expense_user.user_id', $member->id)
-            ->where('expense_user.is_paid', false)
-            ->select('expense_user.*')
-            ->get();
-
-        foreach ($unpaidDebts as $debt) {
-            $ownerRow = DB::table('expense_user')
-                ->where('expense_id', $debt->expense_id)
-                ->where('user_id', $colocation->owner_id)
-                ->first();
-
-            if ($ownerRow) {
-                DB::table('expense_user')
-                    ->where('expense_id', $debt->expense_id)
-                    ->where('user_id', $colocation->owner_id)
-                    ->update([
-                        'amount_owed' => $ownerRow->amount_owed + $debt->amount_owed
-                    ]);
-                DB::table('expense_user')->where('id', $debt->id)->delete();
-            } else {
-                DB::table('expense_user')->where('id', $debt->id)->update(['user_id' => $colocation->owner_id]);
-            }
-        }
+        $this->transferDebt($colocation, $member, $colocation->owner_id);
     }
 }
