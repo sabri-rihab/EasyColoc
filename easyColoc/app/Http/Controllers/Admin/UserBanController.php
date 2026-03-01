@@ -28,6 +28,8 @@ class UserBanController extends Controller
                 // Reputation adjustment (forced leave)
                 if ($totalDebt > 0) {
                     $user->decrement('reputation');
+                } else {
+                    $user->increment('reputation');
                 }
 
                 if ($colocation->owner_id === $user->id) {
