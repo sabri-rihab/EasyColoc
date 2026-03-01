@@ -33,7 +33,7 @@ Route::middleware('auth')->group(function () {
 
     // Invitations
     Route::post('colocations/{colocation}/invitations', [\App\Http\Controllers\InvitationController::class, 'store'])->name('invitations.store');
-    Route::post('invitations/{invitation}/accept', [\App\Http\Controllers\InvitationController::class, 'accept'])->name('invitations.accept_post'); // Renamed to avoid conflict
+    Route::post('invitations/{invitation}/accept', [\App\Http\Controllers\InvitationController::class, 'accept'])->name('invitations.accept');
     Route::post('invitations/{invitation}/reject', [\App\Http\Controllers\InvitationController::class, 'reject'])->name('invitations.reject');
 
     // Expenses (nested under colocation)
