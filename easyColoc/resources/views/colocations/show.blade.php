@@ -484,13 +484,20 @@
 
                             <div class="form-group">
                                 <label class="form-label" for="payer_id">Payé par *</label>
-                                <select id="payer_id" name="payer_id" class="form-input" required>
-                                    @foreach($members as $member)
-                                        <option value="{{ $member->id }}" {{ (old('payer_id', Auth::id()) == $member->id) ? 'selected' : '' }}>
-                                            {{ $member->name }}{{ $member->id === Auth::id() ? ' (moi)' : '' }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                @if(Auth::id() === $colocation->owner_id)
+                                    <select id="payer_id" name="payer_id" class="form-input" required>
+                                        @foreach($members as $member)
+                                            <option value="{{ $member->id }}" {{ (old('payer_id', Auth::id()) == $member->id) ? 'selected' : '' }}>
+                                                {{ $member->name }}{{ $member->id === Auth::id() ? ' (moi)' : '' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                @else
+                                    <select id="payer_id_disabled" class="form-input" disabled style="background:var(--surface2); cursor:not-allowed;">
+                                        <option selected>{{ Auth::user()->name }} (moi)</option>
+                                    </select>
+                                    <input type="hidden" name="payer_id" value="{{ Auth::id() }}">
+                                @endif
                                 @error('payer_id') <div class="form-error">{{ $message }}</div> @enderror
                             </div>
 

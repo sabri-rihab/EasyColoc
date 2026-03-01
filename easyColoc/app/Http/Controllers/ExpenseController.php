@@ -51,6 +51,13 @@ class ExpenseController extends Controller
 
         // Validate payer is a member of this colocation
         $payerId = (int) $validated['payer_id'];
+        $user = Auth::user();
+
+        // Enforce: Only owner can choose "paid by" others. Regular members can only choose themselves.
+        if ($colocation->owner_id !== $user->id && $payerId !== $user->id) {
+            return back()->withErrors(['payer_id' => 'Vous ne pouvez créer des dépenses que pour vous-même.'])->withInput();
+        }
+
         $memberIds = $colocation->members()->pluck('users.id')->toArray();
         if (!in_array($payerId, $memberIds)) {
             return back()->withErrors(['payer_id' => 'Le payeur doit être membre de la colocation.'])->withInput();
@@ -128,6 +135,13 @@ class ExpenseController extends Controller
 
         // Validate new payer is still a member
         $payerId   = (int) $validated['payer_id'];
+        $user = Auth::user();
+
+        // Enforce: Only owner can change "paid by" to someone else. Regular members can only be themselves.
+        if ($colocation->owner_id !== $user->id && $payerId !== $user->id) {
+            return back()->withErrors(['payer_id' => 'Vous ne pouvez attribuer des dépenses que pour vous-même.'])->withInput();
+        }
+
         $memberIds = $colocation->members()->pluck('users.id')->toArray();
         if (!in_array($payerId, $memberIds)) {
             return back()->withErrors(['payer_id' => 'Le payeur doit être membre de la colocation.'])->withInput();

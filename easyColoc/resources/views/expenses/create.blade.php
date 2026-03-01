@@ -60,13 +60,25 @@
 
                         <div class="form-group">
                             <label class="form-label" for="payer_id">Payé par *</label>
-                            <select id="payer_id" name="payer_id" class="form-input" required>
-                                @foreach($members as $member)
-                                    <option value="{{ $member->id }}" {{ old('payer_id', Auth::id()) == $member->id ? 'selected' : '' }}>
-                                        {{ $member->name }}{{ $member->id === Auth::id() ? ' (moi)' : '' }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            @if(Auth::id() === $colocation->owner_id)
+                                <select id="payer_id" name="payer_id" class="form-input" required>
+                                    @foreach($members as $member)
+                                        <option value="{{ $member->id }}" {{ old('payer_id', Auth::id()) == $member->id ? 'selected' : '' }}>
+                                            {{ $member->name }}{{ $member->id === Auth::id() ? ' (moi)' : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @else
+                                <div style="position:relative;">
+                                    <select id="payer_id_disabled" class="form-input" disabled style="background:var(--surface2); cursor:not-allowed;">
+                                        <option selected>{{ Auth::user()->name }} (moi)</option>
+                                    </select>
+                                    <input type="hidden" name="payer_id" value="{{ Auth::id() }}">
+                                    <div style="font-size:9px; color:var(--text-muted); margin-top:4px; font-style:italic;">
+                                        Seul le propriétaire peut attribuer une dépense à un autre membre.
+                                    </div>
+                                </div>
+                            @endif
                             @error('payer_id') <div class="form-error">{{ $message }}</div> @enderror
                         </div>
 
