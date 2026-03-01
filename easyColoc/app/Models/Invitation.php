@@ -64,4 +64,10 @@ class Invitation extends Model
     {
         return $this->status === 'refused';
     }
+
+    //Check if invitation is canceled.
+    public function isCanceled()
+    {
+        return $this->status === 'canceled';
+    }
 }
