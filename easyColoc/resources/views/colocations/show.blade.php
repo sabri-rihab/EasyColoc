@@ -265,6 +265,49 @@
         .settlement-title { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--accent2); margin-bottom: 10px; }
         .settlement-item { font-size: 12px; color: var(--text-dim); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
 
+        /* Member rows in the Members tab */
+        .member-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+        }
+        .member-row:last-child { border-bottom: none; }
+        .member-row:hover { background: rgba(0,0,0,0.02); }
+
+        .member-row-info { flex: 1; min-width: 0; }
+        .member-row-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+        .member-row-sub { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .member-row-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+        /* Info panel rows (right side of members tab) */
+        .info-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 24px;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-key { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+        .info-val { font-size: 12px; color: var(--text-dim); font-weight: 500; }
+
+        .copy-btn {
+            padding: 5px 14px;
+            background: rgba(129,140,248,0.08);
+            border: 1px solid rgba(129,140,248,0.2);
+            border-radius: 8px;
+            color: var(--accent2);
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .copy-btn:hover { background: rgba(129,140,248,0.16); }
+
     </style>
 </head>
 <body>
