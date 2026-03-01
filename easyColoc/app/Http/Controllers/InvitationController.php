@@ -36,6 +36,12 @@ class InvitationController extends Controller
             return back()->with('error', 'Cet utilisateur a déjà une colocation active.');
         }
 
+        // Cancel any previous pending invitations for this email in this colocation
+        Invitation::where('colocation_id', $colocation->id)
+            ->where('email', $request->email)
+            ->where('status', 'pending')
+            ->update(['status' => 'canceled']);
+
         // Create the invitation (token and expiry handled by model boot)
         $invitation = Invitation::create([
             'colocation_id' => $colocation->id,
@@ -70,6 +76,10 @@ class InvitationController extends Controller
 
         if ($invitation->isRefused()) {
             return redirect()->route('dashboard')->with('error', 'Cette invitation a été refusée.');
+        }
+
+        if ($invitation->status === 'canceled') {
+            return redirect()->route('dashboard')->with('error', 'Cette invitation a été annulée.');
         }
 
         if ($user->hasActiveColocation()) {
