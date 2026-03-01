@@ -17,6 +17,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/users/{user}/ban', [UserBanController::class, 'ban'])->name('users.ban');
     Route::post('/users/{user}/unban', [UserBanController::class, 'unban'])->name('users.unban');
 });
+// Invitations
+Route::get('invitations/{token}/join', [\App\Http\Controllers\InvitationController::class, 'join'])->name('invitations.join');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -31,7 +33,7 @@ Route::middleware('auth')->group(function () {
 
     // Invitations
     Route::post('colocations/{colocation}/invitations', [\App\Http\Controllers\InvitationController::class, 'store'])->name('invitations.store');
-    Route::post('invitations/{invitation}/accept', [\App\Http\Controllers\InvitationController::class, 'accept'])->name('invitations.accept');
+    Route::post('invitations/{invitation}/accept', [\App\Http\Controllers\InvitationController::class, 'accept'])->name('invitations.accept_post'); // Renamed to avoid conflict
     Route::post('invitations/{invitation}/reject', [\App\Http\Controllers\InvitationController::class, 'reject'])->name('invitations.reject');
 
     // Expenses (nested under colocation)

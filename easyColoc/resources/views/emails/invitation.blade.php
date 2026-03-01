@@ -29,7 +29,7 @@
                 EasyColoc vous permet de gérer vos dépenses partagées, de suivre vos soldes et de maintenir une bonne entente financière au sein de votre logement.
             </p>
             <div class="btn-container">
-                <a href="{{ url('/register') }}" class="btn">Rejoindre la colocation</a>
+                <a href="{{ route('invitations.join', $invitation->token) }}" class="btn">Rejoindre la colocation</a>
             </div>
             <p>
                 Si vous avez déjà un compte, connectez-vous pour accepter l'invitation depuis votre tableau de bord.

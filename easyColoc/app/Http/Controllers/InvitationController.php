@@ -120,4 +120,25 @@ class InvitationController extends Controller
 
         return redirect()->route('dashboard')->with('success', 'Invitation refusée.');
     }
+
+    /**
+     * Accept invitation via token (GET) - useful for email links.
+     */
+    public function join($token)
+    {
+        $invitation = Invitation::where('token', $token)->first();
+
+        if (!$invitation) {
+            return redirect()->route('dashboard')->with('error', 'L\'invitation est invalide ou a expiré.');
+        }
+
+        if (!Auth::check()) {
+            // Save the current URL as the intended destination after login/register
+            session()->put('url.intended', url()->current());
+            return redirect()->route('register');
+        }
+
+        // Reuse the logic from accept method
+        return $this->accept($invitation);
+    }
 }
