@@ -299,100 +299,310 @@
 ## Class Diagram
 
 ```
-┌──────────────────────────────────────┐
-│            User                      │
-├──────────────────────────────────────┤
-│ - id: int                            │
-│ - name: string                       │
-│ - email: string                      │
-│ - password: string                   │
-│ - reputation: int                    │
-│ - is_global_admin: bool              │
-│ - is_banned: bool                    │
-│ - banned_at: timestamp               │
-├──────────────────────────────────────┤
-│ + colocations(): BelongsToMany       │
-│ + ownedColocation(): HasOne          │
-│ + expensesOwed(): BelongsToMany      │
-│ + expensesPaid(): HasMany            │
-│ + hasActiveColocation(): bool        │
-│ + currentColocation(): Colocation    │
-│ + getColocationBalance(): float      │
-└──────────────┬───────────────────────┘
-               │
-               │ N:M (members)
-               │
-               ▼
-┌──────────────────────────────────────┐
-│          Colocation                  │
-├──────────────────────────────────────┤
-│ - id: int                            │
-│ - name: string                       │
-│ - adresse: string                    │
-│ - owner_id: int                      │
-│ - invitation_code: string            │
-│ - is_active: bool                    │
-├──────────────────────────────────────┤
-│ + owner(): BelongsTo                 │
-│ + members(): BelongsToMany           │
-│ + expenses(): HasMany                │
-│ + invitations(): HasMany             │
-│ + hasMember(User): bool              │
-│ + isOwner(User): bool                │
-│ + boot(): void (generates code)      │
-└──────────────┬───────────────────────┘
-               │
-               │ 1:N
-               │
-               ▼
-┌──────────────────────────────────────┐
-│           Expense                    │
-├──────────────────────────────────────┤
-│ - id: int                            │
-│ - colocation_id: int                 │
-│ - payer_id: int                      │
-│ - title: string                      │
-│ - description: string                │
-│ - amount: decimal                    │
-│ - category: string                   │
-│ - expense_date: date                 │
-│ - is_settled: bool                   │
-├──────────────────────────────────────┤
-│ + colocation(): BelongsTo            │
-│ + payer(): BelongsTo                 │
-│ + debtors(): BelongsToMany           │
-└──────────────────────────────────────┘
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                              MODELS LAYER                                    ║
+╚══════════════════════════════════════════════════════════════════════════════╝
 
-┌──────────────────────────────────────┐
-│         Invitation                   │
-├──────────────────────────────────────┤
-│ - id: int                            │
-│ - colocation_id: int                 │
-│ - inviter_id: int                    │
-│ - email: string                      │
-│ - token: string                      │
-│ - accepted_at: timestamp             │
-│ - expires_at: timestamp              │
-├──────────────────────────────────────┤
-│ + colocation(): BelongsTo            │
-│ + inviter(): BelongsTo               │
-└──────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────┐
+│                          User                                  │
+│                    (Authenticatable)                           │
+├────────────────────────────────────────────────────────────────┤
+│ # Attributes                                                   │
+│ - id: bigint                                                   │
+│ - name: string                                                 │
+│ - email: string (unique)                                       │
+│ - password: string (hashed)                                    │
+│ - reputation: integer (default: 0)                             │
+│ - is_global_admin: boolean (default: false)                    │
+│ - is_banned: boolean (default: false)                          │
+│ - banned_at: timestamp (nullable)                              │
+│ - remember_token: string (nullable)                            │
+│ - email_verified_at: timestamp (nullable)                      │
+│ - created_at: timestamp                                        │
+│ - updated_at: timestamp                                        │
+├────────────────────────────────────────────────────────────────┤
+│ # Relationships                                                │
+│ + colocations(): BelongsToMany<Colocation>                     │
+│   └─ pivot: colocations_user (is_owner, joined_at)            │
+│ + ownedColocation(): HasOne<Colocation>                        │
+│ + expensesOwed(): BelongsToMany<Expense>                       │
+│   └─ pivot: expense_user (amount_owed, is_paid, paid_at)      │
+│ + expensesPaid(): HasMany<Expense>                             │
+│ + pendingInvitations(): HasMany<Invitation>                    │
+├────────────────────────────────────────────────────────────────┤
+│ # Methods                                                      │
+│ + hasActiveColocation(): bool                                  │
+│ + currentColocation(): ?Colocation                             │
+│ + getColocationBalance(Colocation): float                      │
+└────────────────────────────────────────────────────────────────┘
+                    │
+                    │ N:M (members)
+                    │
+                    ▼
+┌────────────────────────────────────────────────────────────────┐
+│                        Colocation                              │
+├────────────────────────────────────────────────────────────────┤
+│ # Attributes                                                   │
+│ - id: bigint                                                   │
+│ - name: string                                                 │
+│ - adresse: text                                                │
+│ - owner_id: bigint (FK → users.id)                            │
+│ - invitation_code: string (unique, auto-generated)             │
+│ - is_active: boolean (default: true)                           │
+│ - created_at: timestamp                                        │
+│ - updated_at: timestamp                                        │
+├────────────────────────────────────────────────────────────────┤
+│ # Relationships                                                │
+│ + owner(): BelongsTo<User>                                     │
+│ + members(): BelongsToMany<User>                               │
+│   └─ pivot: colocations_user (is_owner, joined_at)            │
+│ + expenses(): HasMany<Expense>                                 │
+│ + invitations(): HasMany<Invitation>                           │
+│ + categories(): HasMany<Category>                              │
+├────────────────────────────────────────────────────────────────┤
+│ # Methods                                                      │
+│ + hasMember(User): bool                                        │
+│ + isOwner(User): bool                                          │
+│ # Hooks                                                        │
+│ + boot(): void                                                 │
+│   └─ creating: generates invitation_code                       │
+└────────────────────────────────────────────────────────────────┘
+                    │
+                    │ 1:N
+                    │
+                    ▼
+┌────────────────────────────────────────────────────────────────┐
+│                          Expense                               │
+├────────────────────────────────────────────────────────────────┤
+│ # Attributes                                                   │
+│ - id: bigint                                                   │
+│ - colocation_id: bigint (FK → colocations.id)                 │
+│ - payer_id: bigint (FK → users.id)                            │
+│ - category_id: bigint (FK → categories.id, nullable)          │
+│ - title: string                                                │
+│ - description: text (nullable)                                 │
+│ - amount: decimal(10,2)                                        │
+│ - category: string (nullable)                                  │
+│ - expense_date: date                                           │
+│ - is_settled: boolean (default: false)                         │
+│ - created_at: timestamp                                        │
+│ - updated_at: timestamp                                        │
+├────────────────────────────────────────────────────────────────┤
+│ # Relationships                                                │
+│ + colocation(): BelongsTo<Colocation>                          │
+│ + payer(): BelongsTo<User>                                     │
+│ + category_rel(): BelongsTo<Category>                          │
+│ + debtors(): BelongsToMany<User>                               │
+│   └─ pivot: expense_user (amount_owed, is_paid, paid_at)      │
+├────────────────────────────────────────────────────────────────┤
+│ # Methods                                                      │
+│ + calculateSplit(): float                                      │
+└────────────────────────────────────────────────────────────────┘
 
-┌──────────────────────────────────────┐
-│          Category                    │
-├──────────────────────────────────────┤
-│ - id: int                            │
-│ - name: string                       │
-│ - slug: string                       │
-│ - icon: string                       │
-└──────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────┐
+│                        Invitation                              │
+├────────────────────────────────────────────────────────────────┤
+│ # Attributes                                                   │
+│ - id: bigint                                                   │
+│ - colocation_id: bigint (FK → colocations.id)                 │
+│ - inviter_id: bigint (FK → users.id)                          │
+│ - email: string                                                │
+│ - token: string (unique, auto-generated)                       │
+│ - status: string (nullable)                                    │
+│ - accepted_at: timestamp (nullable)                            │
+│ - expires_at: timestamp (auto: now + 3 days)                   │
+│ - created_at: timestamp                                        │
+│ - updated_at: timestamp                                        │
+├────────────────────────────────────────────────────────────────┤
+│ # Relationships                                                │
+│ + colocation(): BelongsTo<Colocation>                          │
+│ + inviter(): BelongsTo<User>                                   │
+├────────────────────────────────────────────────────────────────┤
+│ # Methods                                                      │
+│ + isExpired(): bool                                            │
+│ + isAccepted(): bool                                           │
+│ + isRefused(): bool                                            │
+│ # Hooks                                                        │
+│ + boot(): void                                                 │
+│   └─ creating: generates token, sets expires_at                │
+└────────────────────────────────────────────────────────────────┘
 
-┌──────────────────────────────────────┐
-│    <<Trait>> DebtTransferable        │
-├──────────────────────────────────────┤
-│ + transferDebt(Colocation, User, int)│
-│ + calculateDebt(Colocation, User)    │
-└──────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────┐
+│                         Category                               │
+├────────────────────────────────────────────────────────────────┤
+│ # Attributes                                                   │
+│ - id: bigint                                                   │
+│ - colocation_id: bigint (FK → colocations.id, nullable)       │
+│ - name: string                                                 │
+│ - icon: string (nullable)                                      │
+│ - created_at: timestamp                                        │
+│ - updated_at: timestamp                                        │
+├────────────────────────────────────────────────────────────────┤
+│ # Relationships                                                │
+│ + colocation(): BelongsTo<Colocation>                          │
+│ + expenses(): HasMany<Expense>                                 │
+└────────────────────────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                           CONTROLLERS LAYER                                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│                  UserDashboardController                       │
+├────────────────────────────────────────────────────────────────┤
+│ + index(Request): View|RedirectResponse                        │
+│   └─ Shows user dashboard or redirects admin                   │
+│ + colocation(Request): View                                    │
+│   └─ Shows colocation page (with/without colocation)           │
+│ + storeColocation(Request): RedirectResponse                   │
+│   └─ Creates new colocation                                    │
+│ + leaveColocation(Colocation): RedirectResponse                │
+│   └─ User leaves colocation                                    │
+│ + storeExpense(Request): RedirectResponse                      │
+│   └─ Creates new expense                                       │
+│ + destroyExpense(Expense): RedirectResponse                    │
+│   └─ Deletes expense                                           │
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│              Admin\DashboardController                         │
+├────────────────────────────────────────────────────────────────┤
+│ + index(): View                                                │
+│   └─ Shows admin dashboard with stats and user list           │
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│              Admin\UserBanController                           │
+│                uses DebtTransferable                           │
+├────────────────────────────────────────────────────────────────┤
+│ + ban(User): RedirectResponse                                  │
+│   └─ Bans user, transfers debts, handles ownership            │
+│ + unban(User): RedirectResponse                                │
+│   └─ Unbans user                                               │
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│                   ProfileController                            │
+├────────────────────────────────────────────────────────────────┤
+│ + edit(Request): View                                          │
+│ + update(ProfileUpdateRequest): RedirectResponse               │
+│ + destroy(Request): RedirectResponse                           │
+└────────────────────────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                            TRAITS LAYER                                      ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│                    DebtTransferable                            │
+│                       (Trait)                                  │
+├────────────────────────────────────────────────────────────────┤
+│ # transferDebt(Colocation, User, int): void                    │
+│   └─ Transfers unpaid debts from one user to another          │
+│ # calculateDebt(Colocation, User): float                       │
+│   └─ Calculates total unpaid debt for a user                  │
+└────────────────────────────────────────────────────────────────┘
+                    │
+                    │ used by
+                    │
+                    ▼
+        ┌───────────────────────────┐
+        │  UserBanController        │
+        └───────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                          MIDDLEWARE LAYER                                    ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│                     AdminMiddleware                            │
+├────────────────────────────────────────────────────────────────┤
+│ + handle(Request, Closure): Response                           │
+│   └─ Checks if user is authenticated AND is_global_admin       │
+│   └─ Redirects non-admins to dashboard                        │
+└────────────────────────────────────────────────────────────────┘
+        Applied to:
+        - /admin/dashboard
+        - /admin/users/{user}/ban
+        - /admin/users/{user}/unban
+
+┌────────────────────────────────────────────────────────────────┐
+│                  Auth Middleware (Laravel)                     │
+├────────────────────────────────────────────────────────────────┤
+│ + handle(Request, Closure): Response                           │
+│   └─ Ensures user is authenticated                            │
+└────────────────────────────────────────────────────────────────┘
+        Applied to:
+        - /dashboard
+        - /colocation
+        - /expenses/*
+        - /colocations/*
+
+┌────────────────────────────────────────────────────────────────┐
+│               Verified Middleware (Laravel)                    │
+├────────────────────────────────────────────────────────────────┤
+│ + handle(Request, Closure): Response                           │
+│   └─ Ensures email is verified                                │
+└────────────────────────────────────────────────────────────────┘
+        Applied to:
+        - /dashboard
+        - /colocation
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                        PIVOT TABLES (Many-to-Many)                           ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────┐
+│                    colocations_user                            │
+│              (User ↔ Colocation Pivot)                         │
+├────────────────────────────────────────────────────────────────┤
+│ - id: bigint                                                   │
+│ - colocation_id: bigint (FK)                                   │
+│ - user_id: bigint (FK)                                         │
+│ - is_owner: boolean                                            │
+│ - joined_at: date                                              │
+│ - created_at: timestamp                                        │
+│ - updated_at: timestamp                                        │
+│ UNIQUE(colocation_id, user_id)                                 │
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│                      expense_user                              │
+│               (User ↔ Expense Pivot)                           │
+├────────────────────────────────────────────────────────────────┤
+│ - id: bigint                                                   │
+│ - expense_id: bigint (FK)                                      │
+│ - user_id: bigint (FK)                                         │
+│ - amount_owed: decimal(10,2)                                   │
+│ - is_paid: boolean                                             │
+│ - paid_at: timestamp (nullable)                                │
+│ - created_at: timestamp                                        │
+│ - updated_at: timestamp                                        │
+│ UNIQUE(expense_id, user_id)                                    │
+└────────────────────────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                         RELATIONSHIP SUMMARY                                 ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+User ──────────── N:M ──────────── Colocation
+  │                                     │
+  │ 1:N (payer)                         │ 1:N
+  │                                     │
+  └──────────────────┐                  │
+                     ▼                  ▼
+                  Expense ◄──────────────┘
+                     │
+                     │ N:M (debtors)
+                     │
+                     ▼
+                   User
+
+User ──────────── 1:N ──────────── Invitation
+Colocation ────── 1:N ──────────── Invitation
+Colocation ────── 1:N ──────────── Category
+Category ──────── 1:N ──────────── Expense
+
 ```
 
 ---
