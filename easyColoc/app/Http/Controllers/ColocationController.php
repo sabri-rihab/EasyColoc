@@ -88,7 +88,7 @@ class ColocationController extends Controller
             $expenseQuery->whereRaw("DATE_FORMAT(expense_date, '%Y-%m') = ?", [$selectedMonth]);
         }
 
-        $expenses = $expenseQuery->orderBy('expense_date', 'desc')->get();
+        $expenses = $expenseQuery->orderBy('expense_date', 'desc')->orderBy('id', 'desc')->get();
 
         // Build available months for the dropdown (months that have expenses)
         $availableMonths = $colocation->expenses()

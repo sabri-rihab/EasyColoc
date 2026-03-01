@@ -55,7 +55,10 @@ class DashboardController extends Controller
             }
 
             $globalExpenses = $globalExpensesQuery->sum('amount');
-            $recentExpenses = $recentExpensesQuery->latest('expense_date')->take(10)->get();
+            $recentExpenses = $recentExpensesQuery->orderBy('expense_date', 'desc')
+                ->orderBy('id', 'desc')
+                ->take(10)
+                ->get();
             $members = $colocation->members()->get();
             $categories = \App\Models\Category::whereNull('colocation_id')
                 ->orWhere('colocation_id', $colocation->id)
