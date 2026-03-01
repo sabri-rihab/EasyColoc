@@ -34,11 +34,15 @@
         .tab-panel.active { display: block; }
 
         /* Layout 2 colonnes pour l'onglet dépenses */
-        .expenses-layout {
+        .expenses-layout, .members-layout {
             display: grid;
             grid-template-columns: 1fr 340px;
             gap: 24px;
             align-items: start;
+        }
+
+        .members-layout {
+            padding-left: 20px;
         }
 
         /* Add expense form */

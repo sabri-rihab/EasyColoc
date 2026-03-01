@@ -311,7 +311,7 @@
                 </div>
 
                 <!-- Members Card -->
-                <div class="card" style="animation: fadeUp 0.5s 0.2s ease both;">
+                <div class="card" style="animation: fadeUp 0.5s 0.2s ease both; padding-left: 20px;">
                     <div class="card-header">
                         <div class="card-title">
                             <div class="card-icon blue">
