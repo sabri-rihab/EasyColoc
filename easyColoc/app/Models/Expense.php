@@ -16,7 +16,6 @@ class Expense extends Model
         'title',
         'description',
         'amount',
-        'category',
         'expense_date',
         'is_settled'
     ];

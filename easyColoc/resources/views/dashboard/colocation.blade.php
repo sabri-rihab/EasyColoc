@@ -496,7 +496,7 @@
                                 <div class="expense-title">{{ $expense->title }}</div>
                                 <div class="expense-meta">
                                     Payé par {{ $expense->payer->name ?? 'N/A' }} · {{ $expense->expense_date?->format('d/m/Y') ?? '' }}
-                                    @if($expense->category) · <span style="color:var(--accent2);">{{ ucfirst($expense->category) }}</span> @endif
+                                    @if($expense->category_rel) · <span style="color:var(--accent2);">{{ $expense->category_rel->name }}</span> @endif
                                 </div>
                             </div>
                             <div class="expense-amount">{{ number_format($expense->amount, 2) }} MAD</div>
